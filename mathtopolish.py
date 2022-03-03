@@ -36,6 +36,10 @@ def mathtopolishconverter(y):
                 if operator:
                     remove(x)
                 operator.append(x)
+            case "%":
+                if operator:
+                    remove(x)
+                operator.append(x)
             case "^":
                 if operator:
                     remove(x)

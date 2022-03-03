@@ -13,12 +13,14 @@ def driver():
             print("Please insert the expression in polish notation. Example: -+AB/*CD^EF")
             polishtoinfix(input())
         elif y == 2:
-            print("Please insert the mathematical equation. Example: (A+B)-(C*D)/E^F")
+            print("Please insert the mathematical equation. The available characters are {-+/*%^()} \nExample: (A+B)-(C*D)/E^F")
             mathtopolishconverter(input())
-        print("Would you like to try something else[Y/N]")
-        if (str(input()) in "Yy"):
-            driver()
+    print("Would you like to try something else[Y/N]")
+    if (str(input()) in "Yy"):
+        driver()
 driver()
+
+
 
 
 

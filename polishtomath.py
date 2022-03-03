@@ -1,6 +1,4 @@
 #This module computes the value of the expression in the polish format
-expression = [x for x in input()]
-expression = expression[::-1]
 
 def isoperator(token):
     if token in ['+','-','*','/','^','%']:
@@ -9,6 +7,8 @@ def isoperator(token):
         return False
 
 def polishtoinfix(exp):
+    expression = [x for x in exp]
+    expression = expression[::-1]
     polishstack = []
     for token in expression:
         if not isoperator(token):
@@ -16,8 +16,6 @@ def polishtoinfix(exp):
         else:
             aux = "(" + polishstack.pop() + token + polishstack.pop() + ")"
             polishstack.append(aux)
-    return polishstack.pop()
-
-print("Result is:",polishtoinfix(expression))
+    print("Result is:",polishstack.pop())
 
 

@@ -10,7 +10,7 @@ def mathtopolishconverter(y):
     operator_value = {"+": 1, "-": 1, "*": 2, "/": 2, "(": 1, ")": 1, "^": 3}
     print("Expression evaluating: "+" ".join(expression))
     output = []
-    count = 1
+
     def remove(x):
         while operator_value[operator[-1]] > operator_value[x]:
             evaluation.append(operator[-1])

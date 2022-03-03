@@ -3,30 +3,40 @@
 
 from tabulate import tabulate
 
-expression = [x for x in "(A+B)*C/E-F"]
+expression = [x for x in "a*(b-c/d*e)/f-g*h"]
 expression = expression[::-1]
 operator = []
 evaluation = []
-operator_value = {"+": 1, "-": 1, "*": 2, "/": 2}
+operator_value = {"+": 1, "-": 1, "*": 2, "/": 2, "(": 1, ")": 1}
 print("Expression evaluating: "+" ".join(expression))
 output = []
 count = 1
+
+def remove(x):
+    while operator_value[operator[-1]] > operator_value[x]:
+        evaluation.append(operator[-1])
+        operator.pop()
+        if len(operator) < 2:
+            break
+
 for x in expression:
     aux = []
     match x:
         case "+":
+            if operator:
+                remove(x)
             operator.append(x)
         case "-":
+            if operator:
+                remove(x)
             operator.append(x)
         case "*":
             if operator:
-                while operator_value[operator[-1]] > operator_value[x]:
-                    operator.pop()
+                remove(x)
             operator.append(x)
         case "/":
             if operator:
-                while operator_value[operator[-1]] > operator_value[x]:
-                    operator.pop()
+                remove(x)
             operator.append(x)
         case ")":
             operator.append(x)

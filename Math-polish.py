@@ -3,11 +3,11 @@
 
 from tabulate import tabulate
 
-expression = [x for x in "a*(b-c/d*e)/f-g*h"]
+expression = [x for x in "d*(c+d)"]
 expression = expression[::-1]
 operator = []
 evaluation = []
-operator_value = {"+": 1, "-": 1, "*": 2, "/": 2, "(": 1, ")": 1}
+operator_value = {"+": 1, "-": 1, "*": 2, "/": 2, "(": 1, ")": 1, "^": 3}
 print("Expression evaluating: "+" ".join(expression))
 output = []
 count = 1
@@ -35,6 +35,10 @@ for x in expression:
                 remove(x)
             operator.append(x)
         case "/":
+            if operator:
+                remove(x)
+            operator.append(x)
+        case "^":
             if operator:
                 remove(x)
             operator.append(x)

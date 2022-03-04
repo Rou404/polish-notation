@@ -22,24 +22,27 @@ def polishcalculator(exp):
                 stack.append(aux)
             case "/":
                 aux = stack.pop() / stack.pop()
-                stack.append(aux)
+                stack.append(float("{:.2f}".format(aux)))
             case "%":
                 aux = stack.pop() % stack.pop()
                 stack.append(aux)
             case "^":
                 a = stack.pop()
                 b = stack.pop()
-                aux = pow(a, b)
-                stack.append(aux)
+                if a < 0:
+                    aux = -a ** b
+                else:
+                    aux = a ** b
+                stack.append(float("{:.2f}".format(aux)))
             case _:
                 stack.append(int(token))
         auxiliary.append(token)
         auxiliary.append(" ".join(copy))
-        auxiliary.append(" ".join([str(x) for x in stack]))
+        auxiliary.append(" ".join([str(x) for x in stack][::-1]))
         final.append(auxiliary)
         copy.pop()
 
     print(tabulate(final, headers=["Token", "Expression", "Result"], tablefmt="grid"))
     print("Result is:",stack.pop())
 
-polishcalculator("+ - 100 200 400")
+polishcalculator("- ^ / -10 3 4 5")

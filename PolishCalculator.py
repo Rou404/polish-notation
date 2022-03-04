@@ -5,7 +5,9 @@ def polishcalculator(exp):
     expression = expression[::-1]
     stack = []
     final = []
-    copy = [expression]
+    copy = []
+    copy.extend(expression[::-1])
+    operation = []
     for token in expression:
         auxiliary = []
         match token:
@@ -32,12 +34,12 @@ def polishcalculator(exp):
             case _:
                 stack.append(int(token))
         auxiliary.append(token)
-        auxiliary.append(copy)
-        auxiliary.append(" ".join(stack))
-        print(stack)
+        auxiliary.append(" ".join(copy))
+        auxiliary.append(" ".join([str(x) for x in stack]))
         final.append(auxiliary)
+        copy.pop()
 
     print(tabulate(final, headers=["Token", "Expression", "Result"], tablefmt="grid"))
     print("Result is:",stack.pop())
 
-polishcalculator("- 100 200")
+polishcalculator("+ - 100 200 400")

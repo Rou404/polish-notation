@@ -1,5 +1,5 @@
 from mathtopolish import mathtopolishconverter
-from polishtomath import polishtoinfix
+from polishtoinfix import polishtoinfix
 from polishcalculator import polishcalculator
 
 def driver():

@@ -27,12 +27,6 @@ def computefinal():
         evaluation.append(x)
         operator.pop()
         tableformer(" ", operator, evaluation)
-        if not operator[:-1]:
-            aux = []
-            aux.append(" ")
-            aux.append("Result is: ")
-            aux.append("".join(evaluation[::-1]))
-            output.append(aux)
 
 def mathtopolishconverter(y):
     expression = [x for x in y]
@@ -77,4 +71,11 @@ def mathtopolishconverter(y):
                 evaluation.append(x)
         tableformer(x, operator, evaluation)
     computefinal()
+    aux = []
+    aux.append(" ")
+    aux.append("Result is: ")
+    aux.append("".join(evaluation[::-1]))
+    output.append(aux)
     print(tabulate(output, headers = ["Token", "Operator Stack", "Evaluation Stack"], tablefmt="grid"))
+
+mathtopolishconverter("(a-(a-a)-b)")

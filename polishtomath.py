@@ -1,10 +1,18 @@
-#This module computes the value of the expression in the polish format
+from tabulate import tabulate
+
+output = []
 
 def isoperator(token):
     if token in ['+','-','*','/','^','%']:
         return True
     else:
         return False
+
+def tableformer(x, evaluation):
+    aux = []
+    aux.append(x)
+    aux.append(" ".join(evaluation))
+    output.append(aux)
 
 def polishtoinfix(exp):
     expression = [x for x in exp]
@@ -16,6 +24,9 @@ def polishtoinfix(exp):
         else:
             aux = "(" + polishstack.pop() + token + polishstack.pop() + ")"
             polishstack.append(aux)
-    print("Result is:",polishstack.pop())
+        tableformer(token, polishstack)
+    tableformer("Result", polishstack)
 
+    print(tabulate(output, headers=["Token", "Evaluation Stack"], tablefmt="grid"))
 
+polishtoinfix("--a-aab")

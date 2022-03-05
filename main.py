@@ -1,6 +1,6 @@
 from mathtopolish import mathtopolishconverter
 from polishtomath import polishtoinfix
-from PolishCalculator import polishcalculator
+from polishcalculator import polishcalculator
 
 def driver():
     print("Please insert the number of the desired language: \n [1]Logical Connectives \n [2]Mathematical expression \n [3]Quit")

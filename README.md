@@ -6,19 +6,6 @@
 
 ---
 
-$$
-\text{infix} \\ x+y \\ x*(y-z)
-
-$$
-
----
-
-$$
-\text{prefix} \\ +xy\\*x-yz  
-$$
-
----
-
 ### Why polish notation?
 
 The idea is simply to have a parenthesis-free notation that makes each equation shorter and easier to parse in terms of defining the evaluation priority of the operators.

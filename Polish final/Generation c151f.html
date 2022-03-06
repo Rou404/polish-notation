@@ -1,0 +1,1283 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Generation and evaluation of Polish notation</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	background-color: #1d2022;
+	color: white;	
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 1400px;
+		color: rgb(236, 236, 236);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	text-indent: -1.7em;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+}
+
+.simple-table-header {
+	background: rgb(247, 246, 243);
+	color: black;
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(179, 174, 163, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 110%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.highlight-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.highlight-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.block-color-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.block-color-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-pink { background-color: rgba(245, 224, 233, 1); }
+.select-value-color-purple { background-color: rgba(232, 222, 238, 1); }
+.select-value-color-green { background-color: rgba(219, 237, 219, 1); }
+.select-value-color-gray { background-color: rgba(227, 226, 224, 1); }
+.select-value-color-opaquegray { background-color: rgba(255, 255, 255, 0.0375); }
+.select-value-color-orange { background-color: rgba(250, 222, 201, 1); }
+.select-value-color-brown { background-color: rgba(238, 224, 218, 1); }
+.select-value-color-red { background-color: rgba(255, 226, 221, 1); }
+.select-value-color-yellow { background-color: rgba(253, 236, 200, 1); }
+.select-value-color-blue { background-color: rgba(211, 229, 239, 1); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="3c1e0d69-7e43-453a-960b-a91da61894bb" class="page sans"><header><h1 class="page-title">Generation and evaluation of Polish notation</h1></header><div class="page-body"><hr id="f881275b-c71e-40e9-954e-07811220a001"/><h3 id="2b672c1e-162e-4d2b-b838-7b07b38c8b52" class="">Polish notation (prefix) is a mathematical notation in which operators precede their operands, in contrast to the more common infix notation, in which operators are placed between operands.</h3><hr id="a9191636-03e9-4a1c-a36e-ea98ea18d7b7"/><div id="43ff9910-68a2-4bba-ac7d-775f94c9089a" class="column-list"><div id="9f2cb4b5-0006-47ac-ab87-89ceb02fcd2b" style="width:50%" class="column"><figure id="205a2a8e-926b-4890-a4ed-e44b3e834c18" class="equation"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.2/katex.min.css')</style><div class="equation-container"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>infix</mtext><mspace linebreak="newline"></mspace><mi>x</mi><mo>+</mo><mi>y</mi><mspace linebreak="newline"></mspace><mi>x</mi><mo>∗</mo><mo stretchy="false">(</mo><mi>y</mi><mo>−</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\text{infix} \\ x+y \\ x*(y-z)
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord text"><span class="mord">infix</span></span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mclose">)</span></span></span></span></span></div></figure><hr id="cf97e314-ac71-4955-bef7-91070c05116e"/></div><div id="f591f923-5469-4457-800b-5012a1895cef" style="width:50%" class="column"><figure id="44f46cbc-f5b4-46a0-850c-03648bc8a450" class="equation"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.2/katex.min.css')</style><div class="equation-container"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>prefix</mtext><mspace linebreak="newline"></mspace><mo>+</mo><mi>x</mi><mi>y</mi><mspace linebreak="newline"></mspace><mo>∗</mo><mi>x</mi><mo>−</mo><mi>y</mi><mi>z</mi></mrow><annotation encoding="application/x-tex">\text{prefix} \\ +xy\\*x-yz  </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord text"><span class="mord">prefix</span></span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:0.7777700000000001em;vertical-align:-0.19444em;"></span><span class="mord">+</span><span class="mord mathnormal">x</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord">∗</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.04398em;">yz</span></span></span></span></span></div></figure><hr id="f15bb45a-b946-4dd7-9017-a7e3cc2c2f4d"/></div></div><h3 id="879c9269-c469-4882-9edf-f7441b863e9d" class="">Why polish notation?</h3><p id="ad5b48c1-d6f4-46fd-b180-1bb63497460c" class="">The idea is simply to have a parenthesis-free notation that makes each equation shorter and easier to parse in terms of defining the evaluation priority of the operators.</p><hr id="95c1d4eb-c9e7-4e0a-a685-b62063711f1b"/><h2 id="0f013f99-3cfb-47a3-b36e-712595b73bda" class="">Converting infix to prefix.</h2><p id="36347e76-e623-4e4f-91d4-22227d1178ae" class="">Converting infix to prefix is done by making use of two stacks, one for the operators and one for the operands.</p><ol type="1" id="010c7b41-e70e-4c00-900d-98939f8ebb4a" class="numbered-list" start="1"><li>For every term in expression<ol type="a" id="89cabaf5-caaa-4f54-9fbc-07088c03b7ba" class="numbered-list" start="1"><li>If it’s an operand<ol type="i" id="2ff5e77c-20dd-4cae-9c49-43bd041a4552" class="numbered-list" start="1"><li>Push to evaluation stack.</li></ol></li></ol><ol type="a" id="edd8dafe-5452-4256-a8b1-7d48f798da75" class="numbered-list" start="2"><li>If it’s an operator<ol type="i" id="43804594-eef9-4f6f-8e05-abd93a340ede" class="numbered-list" start="1"><li>While the stack is not empty and the last operator’s precedence is equal or higher than the term<ol type="1" id="a93399d1-4823-43af-9330-5a03918e3be6" class="numbered-list" start="1"><li>Pop the operator from the operator stack</li></ol><ol type="1" id="14ef9eef-337a-404e-9cfd-42d3ad55d065" class="numbered-list" start="2"><li>Compute the operation between the last two operands in the evaluation stack</li></ol><ol type="1" id="fb50fbba-9674-45e2-86d0-bec3983aec24" class="numbered-list" start="3"><li>Push the result back in the evaluation stack</li></ol></li></ol><ol type="i" id="0ed3e282-6124-4fb1-a942-566e56c9d612" class="numbered-list" start="2"><li>Push operator to operator stack</li></ol></li></ol><ol type="a" id="61108717-a4dc-45ea-88b8-6c582876a35d" class="numbered-list" start="3"><li>If it’s “(”<ol type="i" id="72a91358-6afb-43f2-a9cb-a5562659a346" class="numbered-list" start="1"><li>Push to operator stack</li></ol></li></ol><ol type="a" id="ceabc8dd-5466-4f5a-895b-5d1bcccd156e" class="numbered-list" start="4"><li>If it’s “)”<ol type="i" id="4a875356-0e36-4940-828a-7f45fff222cb" class="numbered-list" start="1"><li>While the last operator in the stack is not equal to “(”<ol type="1" id="4847d7fe-cbe6-4238-b72e-807041308bec" class="numbered-list" start="1"><li>Pop the operator from the operator stack</li></ol><ol type="1" id="fd8e415d-ee11-4ec8-8ca8-df6d1487db01" class="numbered-list" start="2"><li>Compute the operation between the last two operands in the evaluation stack</li></ol><ol type="1" id="3398a499-ba71-4323-b977-bbe1618284e5" class="numbered-list" start="3"><li>Push the result back in the evaluation stack</li></ol></li></ol><ol type="i" id="f88d0774-42c3-42dc-827b-2933fff74747" class="numbered-list" start="2"><li>Pop the operand from the stack</li></ol></li></ol></li></ol><ol type="1" id="37215ba9-b81a-4e8a-a029-b566ee3c99e9" class="numbered-list" start="2"><li>While the operand is not empty <ol type="a" id="1230f7bb-f93e-4321-acb7-7f605d03ef27" class="numbered-list" start="1"><li>Pop the operator from the operator stack</li></ol><ol type="a" id="e43da966-9f9a-4c37-ac1f-aae01f3f2778" class="numbered-list" start="2"><li>Compute the operation between the last two operands in the evaluation stack</li></ol><ol type="a" id="890342a3-97d4-45e8-8c89-b19153a060d4" class="numbered-list" start="3"><li>Push the result back in the evaluation stack</li></ol></li></ol><ol type="1" id="76d09bc4-f361-49f4-a72b-f83e619fcbf6" class="numbered-list" start="3"><li>Evaluation contains only one element, being the expression in prefix form.</li></ol><hr id="8b637645-05ae-4edc-bcad-0e7112addde5"/><div id="b36685e3-e190-4ade-b21c-2e960ccc0e5b" class="column-list"><div id="dd933f78-41a9-4b2d-8677-d65f7a4dcda7" style="width:50%" class="column"><pre id="a1f7f881-8695-4b6d-a28d-8107e24537a8" class="code"><code>def remove(x):
+    while operator_value[operator[-1]] &gt; operator_value[x]:
+        evaluation.append(operator[-1])
+        operator.pop()
+        if len(operator) &lt; 2:
+            break
+
+def computefinal():
+    for x in operator[::-1]:
+        evaluation.append(x)
+        operator.pop()
+        output.append([&quot; &quot;, &quot; &quot;.join(operator),&quot; &quot;.join(evaluation)])
+
+def mathtopolishconverter(y):
+    expression = [x for x in y.split()]
+    expression = expression[::-1]
+    lasttoken = &quot; &quot;
+    for x in expression:
+        match x:
+            case &quot;+&quot;:
+                if operator:
+                    remove(x)
+                operator.append(x)
+            case &quot;-&quot;:
+                if lasttoken.isalpha():
+                    if operator:
+                        remove(x)
+                    operator.append(x)
+                else:
+                    print(&quot;here&quot;)
+                    print(lasttoken)
+                    y = &quot;-&quot;+evaluation.pop()
+                    evaluation.append(y)
+            case &quot;*&quot;:
+                if operator:
+                    remove(x)
+                operator.append(x)
+            case &quot;/&quot;:
+                if operator:
+                    remove(x)
+                operator.append(x)
+            case &quot;%&quot;:
+                if operator:
+                    remove(x)
+                operator.append(x)
+            case &quot;^&quot;:
+                if operator:
+                    remove(x)
+                operator.append(x)
+            case &quot;)&quot;:
+                operator.append(x)
+            case &quot;(&quot;:
+                while operator and operator[-1] != &quot;)&quot;:
+                    output.append([x, &quot; &quot;.join(operator), &quot; &quot;.join(evaluation)])
+                    evaluation.append(operator.pop())
+                    x = &quot; &quot;
+                operator.pop()
+            case _:
+                evaluation.append(x)
+        lasttoken = x</code></pre></div><div id="fcb2720a-e287-4a8f-860e-3db1ad8f81dd" style="width:50%" class="column"><pre id="580c4056-8ce2-45e7-a083-c0013d48f432" class="code"><code>mathtopolishconverter( A ^ ( B * C ) % ( D / E - F + G )
++---------+------------------+---------------------------+
+| Token   | Operator Stack   | Evaluation Stack          |
++=========+==================+===========================+
+| )       | )                |                           |
++---------+------------------+---------------------------+
+| )       | ) )              |                           |
++---------+------------------+---------------------------+
+| G       | ) )              | G                         |
++---------+------------------+---------------------------+
+| +       | ) ) +            | G                         |
++---------+------------------+---------------------------+
+| F       | ) ) +            | G F                       |
++---------+------------------+---------------------------+
+| -       | ) ) + -          | G F                       |
++---------+------------------+---------------------------+
+| E       | ) ) + -          | G F E                     |
++---------+------------------+---------------------------+
+| /       | ) ) + - /        | G F E                     |
++---------+------------------+---------------------------+
+| D       | ) ) + - /        | G F E D                   |
++---------+------------------+---------------------------+
+| (       | ) ) + - /        | G F E D                   |
++---------+------------------+---------------------------+
+|         | ) ) + -          | G F E D /                 |
++---------+------------------+---------------------------+
+|         | ) ) +            | G F E D / -               |
++---------+------------------+---------------------------+
+|         | )                | G F E D / - +             |
++---------+------------------+---------------------------+
+| %       | ) %              | G F E D / - +             |
++---------+------------------+---------------------------+
+| )       | ) % )            | G F E D / - +             |
++---------+------------------+---------------------------+
+| C       | ) % )            | G F E D / - + C           |
++---------+------------------+---------------------------+
+| *       | ) % ) *          | G F E D / - + C           |
++---------+------------------+---------------------------+
+| B       | ) % ) *          | G F E D / - + C B         |
++---------+------------------+---------------------------+
+| (       | ) % ) *          | G F E D / - + C B         |
++---------+------------------+---------------------------+
+|         | ) %              | G F E D / - + C B *       |
++---------+------------------+---------------------------+
+| ^       | ) % ^            | G F E D / - + C B *       |
++---------+------------------+---------------------------+
+| A       | ) % ^            | G F E D / - + C B * A     |
++---------+------------------+---------------------------+
+| (       | ) % ^            | G F E D / - + C B * A     |
++---------+------------------+---------------------------+
+|         | ) %              | G F E D / - + C B * A ^   |
++---------+------------------+---------------------------+
+|         |                  | G F E D / - + C B * A ^ % |
++---------+------------------+---------------------------+
+|         | Result is:       | % ^ A * B C + - / D E F G |
++---------+------------------+---------------------------+
+
+
+
+
+</code></pre></div></div><hr id="05e79fcf-bf50-4741-864c-5eb3f8fddf65"/><h1 id="210f6b3e-501f-4872-a3bc-876c41f0d9cf" class="">Converting prefix to infix</h1><p id="7659fcb5-7a1d-4381-8ff6-83eb49129f2f" class="">Converting prefix to infix is done quite easily, since there are no paratheses. Although the end result is quite messy.</p><ol type="1" id="ba7fd0c4-16c1-4031-a51c-2722e07e5358" class="numbered-list" start="1"><li>For every token in expression<ol type="a" id="66e46b74-4903-4f22-8f4c-d399e50cecc3" class="numbered-list" start="1"><li>If the token is an operator<ol type="i" id="b3186b3a-1236-45e5-965e-fc6a0952d68d" class="numbered-list" start="1"><li>Pop two elements</li></ol><ol type="i" id="40aac4a0-96d9-4336-9fa5-ab444c00df2f" class="numbered-list" start="2"><li>Push operation of the two elements between paratheses</li></ol></li></ol><ol type="a" id="bd69b7aa-06c5-4a83-aa91-b1692b80244a" class="numbered-list" start="2"><li>If the token is negation<ol type="i" id="060c15be-6a94-4b3b-b534-30750157d5a3" class="numbered-list" start="1"><li>Pop one element and add negation</li></ol><ol type="i" id="9d8f19f0-4f99-47c2-98d0-dcf04d083880" class="numbered-list" start="2"><li>Push to stack</li></ol></li></ol><ol type="a" id="7aa3bccf-789a-44b3-9da6-5362632ae62c" class="numbered-list" start="3"><li>If the token is an operand<ol type="i" id="1a9da9bc-d3b1-4aa8-8b71-f6792482f052" class="numbered-list" start="1"><li>Push to stack</li></ol></li></ol></li></ol><hr id="cc2aeda0-63f6-457a-a13c-d723ed447c56"/><div id="37589a9b-3bb0-4c13-928f-d407d9574f1c" class="column-list"><div id="1d29d886-ab00-4453-b549-f3da993995a2" style="width:50%" class="column"><pre id="2f7ccafe-d23a-46ef-aa86-b215aede91a5" class="code"><code>
+def isoperator(token):
+    if token in [&#x27;+&#x27;, &#x27;-&#x27;, &#x27;*&#x27;, &#x27;/&#x27;, &#x27;^&#x27;, &#x27;%&#x27;, &#x27;&amp;&#x27;, &#x27;|&#x27;, &#x27;-&#x27;, &#x27;=&#x27;]:
+        return True
+    else:
+        return False
+
+def polishtoinfix(exp):
+    expression = [x for x in exp]
+    expression = expression[::-1]
+    polishstack = []
+    for token in expression:
+        if isoperator(token):
+            aux = &quot;(&quot; + polishstack.pop() + token + polishstack.pop() + &quot;)&quot;
+            polishstack.append(aux)
+        elif token == &quot;!&quot;:
+            aux = &quot;!&quot;+polishstack.pop()
+            polishstack.append(aux)
+        else:
+            polishstack.append(token)
+
+
+
+
+
+
+
+
+
+
+
+
+</code></pre></div><div id="5bd716ea-20d4-4221-9eaf-1202a531fa83" style="width:50%" class="column"><pre id="9b08950a-9476-4104-81dc-160dd87f525d" class="code"><code>
++---------+---------------------------+
+| Token   | Evaluation Stack          |
++=========+===========================+
+| G       | G                         |
++---------+---------------------------+
+| F       | G F                       |
++---------+---------------------------+
+| E       | G F E                     |
++---------+---------------------------+
+| D       | G F E D                   |
++---------+---------------------------+
+| /       | G F (D/E)                 |
++---------+---------------------------+
+| -       | G ((D/E)-F)               |
++---------+---------------------------+
+| +       | (((D/E)-F)+G)             |
++---------+---------------------------+
+| C       | (((D/E)-F)+G) C           |
++---------+---------------------------+
+| B       | (((D/E)-F)+G) C B         |
++---------+---------------------------+
+| *       | (((D/E)-F)+G) (B*C)       |
++---------+---------------------------+
+| A       | (((D/E)-F)+G) (B*C) A     |
++---------+---------------------------+
+| ^       | (((D/E)-F)+G) (A^(B*C))   |
++---------+---------------------------+
+| %       | ((A^(B*C))%(((D/E)-F)+G)) |
++---------+---------------------------+
+| Result  | ((A^(B*C))%(((D/E)-F)+G)) |
++---------+---------------------------+
+Initial ( A ^ ( B * C ) % ( D / E - F + G )</code></pre></div></div><hr id="abba6e9d-d80b-472a-b653-9c1ab1918fe6"/><h3 id="7e68d645-6ce4-47ba-9812-2a7b194302b9" class="">Computing prefix</h3><p id="08b881bb-0908-4716-a8a5-ec2dc9a03137" class="">Takes the same steps as converting to infix, but calculates the operation between elements.</p><p id="da2be67e-80cf-486a-9ea6-18a433014de4" class="">The usable operations supported by this program are: </p><ul id="3e4e4254-90b8-431b-b51f-160d0bc3df7a" class="bulleted-list"><li style="list-style-type:disc">+ (addition)</li></ul><ul id="6c6d964c-3878-4276-a2fe-1d616f2bf87d" class="bulleted-list"><li style="list-style-type:disc">- (subtraction) and - as a unary function</li></ul><ul id="fdc09518-62fd-4c24-93af-95b53eee919d" class="bulleted-list"><li style="list-style-type:disc">* (multiplication)</li></ul><ul id="f7a6c38c-b198-4bda-bbfb-b5e6f59d3d1b" class="bulleted-list"><li style="list-style-type:disc">/ (division)</li></ul><ul id="79cab149-aeb3-4c1b-a487-31f5b99efd8b" class="bulleted-list"><li style="list-style-type:disc">% (modulo)</li></ul><ul id="c6c6259c-9a32-4826-a682-91fb1f526ce1" class="bulleted-list"><li style="list-style-type:disc">^ (power) using existing python function **</li></ul><hr id="cd0df52e-1b71-4c28-b696-d07113624db7"/><div id="1975e806-47d1-4818-b136-ae248bc613bd" class="column-list"><div id="53bb38d7-9eae-4c12-9727-6bd983cdca10" style="width:50%" class="column"><pre id="478dee5a-a718-4812-8ea4-e86e23dab743" class="code"><code>
+def polishcalculator(exp):
+    expression = [x for x in exp.split()]
+    expression = expression[::-1]
+    stack = []
+    for token in expression:
+        match token:
+            case &quot;+&quot;:
+                aux = stack.pop() + stack.pop()
+                stack.append(aux)
+            case &quot;-&quot;:
+                aux = stack.pop() - stack.pop()
+                stack.append(aux)
+            case &quot;*&quot;:
+                aux = stack.pop() * stack.pop()
+                stack.append(aux)
+            case &quot;/&quot;:
+                aux = stack.pop() / stack.pop()
+                stack.append(float(&quot;{:.2f}&quot;.format(aux)))
+            case &quot;%&quot;:
+                aux = stack.pop() % stack.pop()
+                stack.append(float(&quot;{:.2f}&quot;.format(aux)))
+            case &quot;^&quot;:
+                a = stack.pop()
+                b = stack.pop()
+                if a &lt; 0:
+                    aux = -a ** b
+                else:
+                    aux = a ** b
+                stack.append(float(&quot;{:.2f}&quot;.format(aux)))
+            case _:
+                stack.append(int(token))</code></pre></div><div id="239b332c-edbb-480d-995f-664fc3ca224a" style="width:50%" class="column"><pre id="3ffda4c0-3a06-4d1e-819d-7716b3c21e37" class="code"><code>+---------+----------+---------------------------+
+| Token   | Result   | Expression                |
++=========+==========+===========================+
+| 7       | 7        | + 1 % ^ 2 3 + / 4 5 * 6 7 |
++---------+----------+---------------------------+
+| 6       | 6 7      | + 1 % ^ 2 3 + / 4 5 * 6   |
++---------+----------+---------------------------+
+| *       | 42.0     | + 1 % ^ 2 3 + / 4 5 *     |
++---------+----------+---------------------------+
+| 5       | 5 42.0   | + 1 % ^ 2 3 + / 4 5       |
++---------+----------+---------------------------+
+| 4       | 4 5 42.0 | + 1 % ^ 2 3 + / 4         |
++---------+----------+---------------------------+
+| /       | 0.8 42.0 | + 1 % ^ 2 3 + /           |
++---------+----------+---------------------------+
+| +       | 42.8     | + 1 % ^ 2 3 +             |
++---------+----------+---------------------------+
+| 3       | 3 42.8   | + 1 % ^ 2 3               |
++---------+----------+---------------------------+
+| 2       | 2 3 42.8 | + 1 % ^ 2                 |
++---------+----------+---------------------------+
+| ^       | 8.0 42.8 | + 1 % ^                   |
++---------+----------+---------------------------+
+| %       | 8.0      | + 1 %                     |
++---------+----------+---------------------------+
+| 1       | 1 8.0    | + 1                       |
++---------+----------+---------------------------+
+| +       | 9.0      | +                         |
++---------+----------+---------------------------+
+Result is: 9.0
+
+</code></pre></div></div><hr id="cff45ff6-7547-47b2-9e32-9048bbc325be"/><h3 id="c160a31a-e885-4ddc-b637-9927dc36133d" class="">Examples</h3><p id="ce1e9407-6e2c-49d9-b7e8-d7ed9e197d20" class="">Example using every operator supported</p><figure id="c151f3bc-fe6b-4d62-967b-e096f26e20f0" class="image"><a href="Generation%20c151f/Untitled.png"><img style="width:720px" src="Generation%20c151f/Untitled.png"/></a></figure><hr id="1c3caeaf-1650-423c-8b15-1dd3420de4c0"/><div id="aed8a648-19c6-493a-a61f-d3a36e3f06e3" class="column-list"><div id="58c1d7cb-9018-4991-9cc9-d39dad222563" style="width:50%" class="column"><pre id="aad1993c-a5c8-4e76-8598-06cceff32694" class="code"><code>Conversion to polish notation
++---------+------------------+---------------------------+
+| Token   | Operator Stack   | Evaluation Stack          |
++=========+==================+===========================+
+| )       | )                |                           |
++---------+------------------+---------------------------+
+| 7       | )                | 7                         |
++---------+------------------+---------------------------+
+| %       | ) %              | 7                         |
++---------+------------------+---------------------------+
+| 6       | ) %              | 7 6                       |
++---------+------------------+---------------------------+
+| +       | ) +              | 7 6 %                     |
++---------+------------------+---------------------------+
+| 5       | ) +              | 7 6 % 5                   |
++---------+------------------+---------------------------+
+| /       | ) + /            | 7 6 % 5                   |
++---------+------------------+---------------------------+
+| 4       | ) + /            | 7 6 % 5 4                 |
++---------+------------------+---------------------------+
+| (       | ) + /            | 7 6 % 5 4                 |
++---------+------------------+---------------------------+
+| (       | ) +              | 7 6 % 5 4 /               |
++---------+------------------+---------------------------+
+| (       |                  | 7 6 % 5 4 / +             |
++---------+------------------+---------------------------+
+| *       | *                | 7 6 % 5 4 / +             |
++---------+------------------+---------------------------+
+| )       | * )              | 7 6 % 5 4 / +             |
++---------+------------------+---------------------------+
+| 3       | * )              | 7 6 % 5 4 / + 3           |
++---------+------------------+---------------------------+
+| ^       | * ) ^            | 7 6 % 5 4 / + 3           |
++---------+------------------+---------------------------+
+| 2       | * ) ^            | 7 6 % 5 4 / + 3 2         |
++---------+------------------+---------------------------+
+| (       | * ) ^            | 7 6 % 5 4 / + 3 2         |
++---------+------------------+---------------------------+
+| (       | *                | 7 6 % 5 4 / + 3 2 ^       |
++---------+------------------+---------------------------+
+| -       | -                | 7 6 % 5 4 / + 3 2 ^ *     |
++---------+------------------+---------------------------+
+| 1       | -                | 7 6 % 5 4 / + 3 2 ^ * 1   |
++---------+------------------+---------------------------+
+|         |                  | 7 6 % 5 4 / + 3 2 ^ * 1 - |
++---------+------------------+---------------------------+
+|         | Result is:       | - 1 * ^ 2 3 + / 4 5 % 6 7 |
++---------+------------------+---------------------------+</code></pre></div><div id="1f0d4762-5fec-413e-b3fa-1859e59dfb79" style="width:50%" class="column"><pre id="66b452c4-011d-46dc-bc1e-143ba19b0494" class="code"><code>Computation
++---------+----------+---------------------------+
+| Token   | Result   | Expression                |
++=========+==========+===========================+
+| 7       | 7        | - 1 * ^ 2 3 + / 4 5 % 6 7 |
++---------+----------+---------------------------+
+| 6       | 6 7      | - 1 * ^ 2 3 + / 4 5 % 6   |
++---------+----------+---------------------------+
+| %       | 6        | - 1 * ^ 2 3 + / 4 5 %     |
++---------+----------+---------------------------+
+| 5       | 5 6      | - 1 * ^ 2 3 + / 4 5       |
++---------+----------+---------------------------+
+| 4       | 4 5 6    | - 1 * ^ 2 3 + / 4         |
++---------+----------+---------------------------+
+| /       | 0.8 6    | - 1 * ^ 2 3 + /           |
++---------+----------+---------------------------+
+| +       | 6.8      | - 1 * ^ 2 3 +             |
++---------+----------+---------------------------+
+| 3       | 3 6.8    | - 1 * ^ 2 3               |
++---------+----------+---------------------------+
+| 2       | 2 3 6.8  | - 1 * ^ 2                 |
++---------+----------+---------------------------+
+| ^       | 8.0 6.8  | - 1 * ^                   |
++---------+----------+---------------------------+
+| *       | 54.4     | - 1 *                     |
++---------+----------+---------------------------+
+| 1       | 1 54.4   | - 1                       |
++---------+----------+---------------------------+
+| -       | -53.4    | -                         |
++---------+----------+---------------------------+
+Result is: -53.4
+</code></pre></div></div><hr id="baea2465-200f-40d1-8678-a75a1dc09ef2"/><blockquote id="1880be7f-fd1b-42a9-a0a5-ea78eee39c60" class="">For computing the value of a prefix notation in this program, every element of the input needs to be separated by “ “ (space) in order to make distinction between a negative number and a subtraction and between single and multi-digit numbers. </blockquote><p id="9edd7fce-f148-45ad-a4cf-e3b4047c70d6" class="">Example with negative numbers.</p><figure id="5831f3b2-64db-49f2-abe2-8e1db6c215c2" class="image"><a href="Generation%20c151f/Untitled%201.png"><img style="width:768px" src="Generation%20c151f/Untitled%201.png"/></a></figure><div id="bcae154a-4558-4acc-9a64-d2b8e840551b" class="column-list"><div id="b1848ed9-53bc-4549-bc91-43cbaae1a43b" style="width:50%" class="column"><pre id="9203165f-a51e-42d3-a625-16813a919779" class="code"><code>+---------+------------------+--------------------+
+| Token   | Operator Stack   | Evaluation Stack   |
++=========+==================+====================+
+| 2       |                  | 2                  |
++---------+------------------+--------------------+
+| /       | /                | 2                  |
++---------+------------------+--------------------+
+| -10     | /                | 2 -10              |
++---------+------------------+--------------------+
+| +       | +                | 2 -10 /            |
++---------+------------------+--------------------+
+| -100    | +                | 2 -10 / -100       |
++---------+------------------+--------------------+
+|         |                  | 2 -10 / -100 +     |
++---------+------------------+--------------------+
+|         | Result is:       | + -100 / -10 2     |
++---------+------------------+--------------------+</code></pre></div><div id="0df9485d-cf3c-418e-bfee-8da333534b8a" style="width:50%" class="column"><pre id="0e2eb871-8303-4426-9426-c608fd5855c5" class="code"><code>+---------+-----------+----------------+
+| Token   | Result    | Expression     |
++=========+===========+================+
+| 2       | 2         | + -100 / -10 2 |
++---------+-----------+----------------+
+| -10     | -10 2     | + -100 / -10   |
++---------+-----------+----------------+
+| /       | -5.0      | + -100 /       |
++---------+-----------+----------------+
+| -100    | -100 -5.0 | + -100         |
++---------+-----------+----------------+
+| +       | -105.0    | +              |
++---------+-----------+----------------+
+Result is: -105.0</code></pre></div></div><hr id="093cd921-a579-4920-ad53-9bfe704c8c00"/><p id="feea90e8-10ea-496a-9b2d-a1ef8ecb9491" class="">Some random example </p><figure id="8816d4b6-7dbd-421e-ba0f-141377035bc8" class="image"><a href="Generation%20c151f/Untitled%202.png"><img style="width:720px" src="Generation%20c151f/Untitled%202.png"/></a></figure><div id="2ddab0a7-4d51-47d2-b21c-9692d9de1f74" class="column-list"><div id="b59f4ada-19a7-4522-ac2c-93edb577009d" style="width:50%" class="column"><pre id="91a60004-7a09-4321-870f-2be709d98045" class="code"><code>+---------+------------------+-----------------------------------+
+| Token   | Operator Stack   | Evaluation Stack                  |
++=========+==================+===================================+
+| )       | )                |                                   |
++---------+------------------+-----------------------------------+
+| 5       | )                | 5                                 |
++---------+------------------+-----------------------------------+
+| ^       | ) ^              | 5                                 |
++---------+------------------+-----------------------------------+
+| 2       | ) ^              | 5 2                               |
++---------+------------------+-----------------------------------+
+| -       | ) -              | 5 2 ^                             |
++---------+------------------+-----------------------------------+
+| )       | ) - )            | 5 2 ^                             |
++---------+------------------+-----------------------------------+
+| -54     | ) - )            | 5 2 ^ -54                         |
++---------+------------------+-----------------------------------+
+| +       | ) - ) +          | 5 2 ^ -54                         |
++---------+------------------+-----------------------------------+
+| 2       | ) - ) +          | 5 2 ^ -54 2                       |
++---------+------------------+-----------------------------------+
+| (       | ) - ) +          | 5 2 ^ -54 2                       |
++---------+------------------+-----------------------------------+
+| (       | ) -              | 5 2 ^ -54 2 +                     |
++---------+------------------+-----------------------------------+
+| *       | ) - *            | 5 2 ^ -54 2 +                     |
++---------+------------------+-----------------------------------+
+| 20      | ) - *            | 5 2 ^ -54 2 + 20                  |
++---------+------------------+-----------------------------------+
+| (       | ) - *            | 5 2 ^ -54 2 + 20                  |
++---------+------------------+-----------------------------------+
+| (       | ) -              | 5 2 ^ -54 2 + 20 *                |
++---------+------------------+-----------------------------------+
+| (       |                  | 5 2 ^ -54 2 + 20 * -              |
++---------+------------------+-----------------------------------+
+| -       | -                | 5 2 ^ -54 2 + 20 * -              |
++---------+------------------+-----------------------------------+
+| )       | - )              | 5 2 ^ -54 2 + 20 * -              |
++---------+------------------+-----------------------------------+
+| 2       | - )              | 5 2 ^ -54 2 + 20 * - 2            |
++---------+------------------+-----------------------------------+
+| ^       | - ) ^            | 5 2 ^ -54 2 + 20 * - 2            |
++---------+------------------+-----------------------------------+
+| 9       | - ) ^            | 5 2 ^ -54 2 + 20 * - 2 9          |
++---------+------------------+-----------------------------------+
+| (       | - ) ^            | 5 2 ^ -54 2 + 20 * - 2 9          |
++---------+------------------+-----------------------------------+
+| (       | -                | 5 2 ^ -54 2 + 20 * - 2 9 ^        |
++---------+------------------+-----------------------------------+
+| /       | - /              | 5 2 ^ -54 2 + 20 * - 2 9 ^        |
++---------+------------------+-----------------------------------+
+| 20      | - /              | 5 2 ^ -54 2 + 20 * - 2 9 ^ 20     |
++---------+------------------+-----------------------------------+
+|         | -                | 5 2 ^ -54 2 + 20 * - 2 9 ^ 20 /   |
++---------+------------------+-----------------------------------+
+|         |                  | 5 2 ^ -54 2 + 20 * - 2 9 ^ 20 / - |
++---------+------------------+-----------------------------------+
+|         | Result is:       | - / 20 ^ 9 2 - * 20 + 2 -54 ^ 2 5 |
++---------+------------------+-----------------------------------+</code></pre></div><div id="3cc56d8f-e560-46e3-99bb-50c4f81bb2ce" style="width:50%" class="column"><pre id="4d4c9352-a4f0-42a9-b5f2-1e0bf6267963" class="code"><code>+---------+-----------------+-----------------------------------+
+| Token   | Result          | Expression                        |
++=========+=================+===================================+
+| 5       | 5               | - / 20 ^ 9 2 - * 20 + 2 -54 ^ 2 5 |
++---------+-----------------+-----------------------------------+
+| 2       | 2 5             | - / 20 ^ 9 2 - * 20 + 2 -54 ^ 2   |
++---------+-----------------+-----------------------------------+
+| ^       | 32.0            | - / 20 ^ 9 2 - * 20 + 2 -54 ^     |
++---------+-----------------+-----------------------------------+
+| -54     | -54 32.0        | - / 20 ^ 9 2 - * 20 + 2 -54       |
++---------+-----------------+-----------------------------------+
+| 2       | 2 -54 32.0      | - / 20 ^ 9 2 - * 20 + 2           |
++---------+-----------------+-----------------------------------+
+| +       | -52 32.0        | - / 20 ^ 9 2 - * 20 +             |
++---------+-----------------+-----------------------------------+
+| 20      | 20 -52 32.0     | - / 20 ^ 9 2 - * 20               |
++---------+-----------------+-----------------------------------+
+| *       | -1040 32.0      | - / 20 ^ 9 2 - *                  |
++---------+-----------------+-----------------------------------+
+| -       | -1072.0         | - / 20 ^ 9 2 -                    |
++---------+-----------------+-----------------------------------+
+| 2       | 2 -1072.0       | - / 20 ^ 9 2                      |
++---------+-----------------+-----------------------------------+
+| 9       | 9 2 -1072.0     | - / 20 ^ 9                        |
++---------+-----------------+-----------------------------------+
+| ^       | 81.0 -1072.0    | - / 20 ^                          |
++---------+-----------------+-----------------------------------+
+| 20      | 20 81.0 -1072.0 | - / 20                            |
++---------+-----------------+-----------------------------------+
+| /       | 0.25 -1072.0    | - /                               |
++---------+-----------------+-----------------------------------+
+| -       | 1072.25         | -                                 |
++---------+-----------------+-----------------------------------+
+Result is: 1072.25</code></pre><p id="3d1727aa-b8bf-4428-8b84-60053c70268c" class="">
+</p></div></div><h1 id="d0a2fc2e-d06a-4c12-82b1-97cdb0714a74" class="">Logical operators</h1><p id="7f8027e2-0edc-438b-8e03-a5e99b463f24" class="">Uses the same algorithm but in the case of negation ! it is strictly a unary function.</p><ul id="8372b75c-8adc-4b18-8584-49a99ef18a3f" class="bulleted-list"><li style="list-style-type:disc"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.2/katex.min.css')</style><span data-token-index="0" contenteditable="false" class="notion-text-equation-token" style="user-select:all;-webkit-user-select:all;-moz-user-select:all"><span></span><span><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">!</mo><mtext> as </mtext><mi mathvariant="normal">¬</mi></mrow><annotation encoding="application/x-tex">! \text{ as } \neg</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mclose">!</span><span class="mord text"><span class="mord"> as </span></span><span class="mord">¬</span></span></span></span></span><span>﻿</span></span></li></ul><ul id="bb3db8ba-285a-400f-b6ce-3b4a36c081ab" class="bulleted-list"><li style="list-style-type:disc"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.2/katex.min.css')</style><span data-token-index="0" contenteditable="false" class="notion-text-equation-token" style="user-select:all;-webkit-user-select:all;-moz-user-select:all"><span></span><span><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∣</mi><mtext> as </mtext><mo>∨</mo></mrow><annotation encoding="application/x-tex">|\text{ as } \lor</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">∣</span><span class="mord text"><span class="mord"> as </span></span><span class="mord">∨</span></span></span></span></span><span>﻿</span></span></li></ul><ul id="e9d4ef38-0556-4da4-b4e5-c76d02a6972c" class="bulleted-list"><li style="list-style-type:disc"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.2/katex.min.css')</style><span data-token-index="0" contenteditable="false" class="notion-text-equation-token" style="user-select:all;-webkit-user-select:all;-moz-user-select:all"><span></span><span><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">&amp;</mi><mtext> as </mtext><mo>∧</mo></mrow><annotation encoding="application/x-tex">\&amp; \text{ as } \land</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord">&amp;</span><span class="mord text"><span class="mord"> as </span></span><span class="mord">∧</span></span></span></span></span><span>﻿</span></span></li></ul><ul id="2993b2ba-e35e-4e03-9492-b8d156be2379" class="bulleted-list"><li style="list-style-type:disc"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.2/katex.min.css')</style><span data-token-index="0" contenteditable="false" class="notion-text-equation-token" style="user-select:all;-webkit-user-select:all;-moz-user-select:all"><span></span><span><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>−</mo><mtext> as </mtext><mo>→</mo></mrow><annotation encoding="application/x-tex">-\text{ as } \to</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="mord">−</span><span class="mord text"><span class="mord"> as </span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">→</span></span></span></span></span><span>﻿</span></span></li></ul><ul id="ae573f33-cd63-4836-a3c8-1c43f71c5058" class="bulleted-list"><li style="list-style-type:disc"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.2/katex.min.css')</style><span data-token-index="0" contenteditable="false" class="notion-text-equation-token" style="user-select:all;-webkit-user-select:all;-moz-user-select:all"><span></span><span><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>=</mo><mtext> as </mtext><mtext>  </mtext><mo>⟺</mo><mtext>  </mtext></mrow><annotation encoding="application/x-tex">= \text{ as } \iff</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.36687em;vertical-align:0em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.549em;vertical-align:-0.024em;"></span><span class="mord text"><span class="mord"> as </span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">⟺</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span></span></span></span><span>﻿</span></span></li></ul><h2 id="69aaaa30-a2e2-4c29-8255-a8ae88d0b638" class="">Logic conversion to polish notation</h2><div id="07ec12bb-1d5e-4277-882f-3309ea09bbab" class="column-list"><div id="d4fc5e9e-dd5b-4f3b-8b25-b4a65c0b5c98" style="width:50%" class="column"><pre id="48bb9078-3395-4c4f-9030-d84235be7e60" class="code"><code>operator_value = {&quot;!&quot;: 3, &quot;|&quot;: 1, &quot;&amp;&quot;: 2, &quot;-&quot;: 2, &quot;(&quot;: 0, &quot;)&quot;: 0, &quot;=&quot;: 2}
+
+def remove(x):
+    while operator_value[operator[-1]] &gt; operator_value[x]:
+        evaluation.append(operator[-1])
+        operator.pop()
+        if len(operator) &lt; 2:
+            break
+
+def computefinal():
+    for x in operator[::-1]:
+        evaluation.append(x)
+        operator.pop()
+        tableformer(&quot; &quot;, operator, evaluation)
+
+def logictopolishconverter(y):
+    expression = [x for x in y]
+    expression = expression[::-1]
+
+    for x in expression:
+        match x:
+            case &quot;!&quot;:
+                if operator:
+                    remove(x)
+                operator.append(x)
+            case &quot;&amp;&quot;:
+                if operator:
+                    remove(x)
+                operator.append(x)
+            case &quot;|&quot;:
+                if operator:
+                    remove(x)
+                operator.append(x)
+            case &quot;-&quot;:
+                if operator:
+                    remove(x)
+                operator.append(x)
+            case &quot;=&quot;:
+                if operator:
+                    remove(x)
+                operator.append(x)
+            case &quot;)&quot;:
+                operator.append(x)
+            case &quot;(&quot;:
+                while operator and operator[-1] != &quot;)&quot;:
+                    tableformer(x, operator, evaluation)
+                    evaluation.append(operator.pop())
+                    x = &quot; &quot;
+                tableformer(&quot; &quot;, operator, evaluation)
+                operator.pop()
+            case _:
+                evaluation.append(x)
+        tableformer(x, operator, evaluation)
+    computefinal()</code></pre></div><div id="f71130f3-6080-4de8-b560-df7110354b25" style="width:50%" class="column"><pre id="80b32864-c86c-495f-9c7a-3bdfcc0eacbd" class="code"><code>logictopolishconverter(!(A|B)&amp;C-(D=E))
++---------+------------------+---------------------+
+| Token   | Operator Stack   | Evaluation Stack    |
++=========+==================+=====================+
+| )       | )                |                     |
++---------+------------------+---------------------+
+| E       | )                | E                   |
++---------+------------------+---------------------+
+| =       | ) =              | E                   |
++---------+------------------+---------------------+
+| D       | ) =              | E D                 |
++---------+------------------+---------------------+
+| (       | ) =              | E D                 |
++---------+------------------+---------------------+
+|         | )                | E D =               |
++---------+------------------+---------------------+
+| -       | -                | E D =               |
++---------+------------------+---------------------+
+| C       | -                | E D = C             |
++---------+------------------+---------------------+
+| &amp;       | - &amp;              | E D = C             |
++---------+------------------+---------------------+
+| )       | - &amp; )            | E D = C             |
++---------+------------------+---------------------+
+| B       | - &amp; )            | E D = C B           |
++---------+------------------+---------------------+
+| |       | - &amp; ) |          | E D = C B           |
++---------+------------------+---------------------+
+| A       | - &amp; ) |          | E D = C B A         |
++---------+------------------+---------------------+
+| (       | - &amp; ) |          | E D = C B A         |
++---------+------------------+---------------------+
+|         | - &amp; )            | E D = C B A |       |
++---------+------------------+---------------------+
+| !       | - &amp; !            | E D = C B A |       |
++---------+------------------+---------------------+
+|         | - &amp;              | E D = C B A | !     |
++---------+------------------+---------------------+
+|         | -                | E D = C B A | ! &amp;   |
++---------+------------------+---------------------+
+|         |                  | E D = C B A | ! &amp; - |
++---------+------------------+---------------------+
+|         | Result is:       | -&amp;!|ABC=DE          |
++---------+------------------+---------------------+
+
+
+
+
+
+
+
+
+</code></pre></div></div><h2 id="fa352eae-5228-460e-bb8b-44fc4a72d43d" class="">Logical calculator</h2><div id="c51ee3cd-ccf2-4493-83dd-45d425579470" class="column-list"><div id="c2ca9f67-d0f2-457b-aa94-5f49538dbf45" style="width:50%" class="column"><pre id="0a9f7933-c608-47e4-966b-d24d9bf90c75" class="code"><code>
+def neg(a):
+    if a == 1:
+        return 0
+    return 1
+
+def lor(a,b):
+    if a == 0 and b == 0:
+        return 0
+    return 1
+
+def land(a ,b):
+    if a or b:
+        return 1
+    return 0
+
+def lto(a ,b):
+    if a == 0 and b:
+        return 0
+    return 1
+
+def equal(a,b):
+    if a == b:
+        return 1
+    return 0
+
+def polishlogicalcalculator(exp):
+    expression = [x for x in exp]
+    expression = expression[::-1]
+    stack = []
+    final = []
+    for token in expression:
+        match token:
+            case &quot;!&quot;:
+                a = stack.pop()
+                stack.append(neg(a))
+            case &quot;|&quot;:
+                a = lor(stack.pop(), stack.pop())
+                stack.append(a)
+            case &quot;&amp;&quot;:
+                a = land(stack.pop(), stack.pop())
+                stack.append(a)
+            case &quot;-&quot;:
+                a = lto(stack.pop(), stack.pop())
+                stack.append(a)
+            case &quot;=&quot;:
+                a = equal(stack.pop(), stack.pop())
+                stack.append(a)
+            case _:
+                stack.append(int(token)</code></pre></div><div id="3a51bb6a-1a3e-4462-ac22-62e7e52ece20" style="width:50%" class="column"><pre id="22bf671f-2b17-43d2-9ad9-cca78174d2fa" class="code"><code>polishlogicalcalcuallator(-&amp;!|110=10)
++------------+----------+
+| Token      | Result   |
++============+==========+
+| 0          | 0        |
++------------+----------+
+| 1          | 0 1      |
++------------+----------+
+| =          | 0        |
++------------+----------+
+| 0          | 0 0      |
++------------+----------+
+| 1          | 0 0 1    |
++------------+----------+
+| 1          | 0 0 1 1  |
++------------+----------+
+| |          | 0 0 1    |
++------------+----------+
+| !          | 0 0 0    |
++------------+----------+
+| &amp;          | 0 0      |
++------------+----------+
+| -          | 1        |
++------------+----------+
+| Result is: | 1        |
++------------+----------+</code></pre></div></div></div></article></body></html>

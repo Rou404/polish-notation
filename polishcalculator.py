@@ -44,3 +44,4 @@ def polishcalculator(exp):
     print(tabulate(final, headers=["Token", "Result", "Expression"], tablefmt="grid"))
     print("Result is:",stack.pop())
 
+polishcalculator("+ -100 / -10 2")

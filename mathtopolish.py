@@ -21,9 +21,9 @@ def computefinal():
         output.append([" ", " ".join(operator)," ".join(evaluation)])
 
 def mathtopolishconverter(y):
-    expression = [x for x in y]
+    expression = [x for x in y.split()]
     expression = expression[::-1]
-
+    lasttoken = " "
     for x in expression:
         match x:
             case "+":
@@ -31,9 +31,13 @@ def mathtopolishconverter(y):
                     remove(x)
                 operator.append(x)
             case "-":
-                if operator:
-                    remove(x)
-                operator.append(x)
+                if lasttoken.isalpha():
+                    if operator:
+                        remove(x)
+                    operator.append(x)
+                else:
+                    y = "-"+evaluation.pop()
+                    evaluation.append(y)
             case "*":
                 if operator:
                     remove(x)
@@ -64,7 +68,7 @@ def mathtopolishconverter(y):
                 evaluation.append(x)
         output.append([" ", " ".join(operator)," ".join(evaluation)])
     computefinal()
-    output.append([" ", "Result is: ", "".join(evaluation[::-1])])
+    output.append([" ", "Result is: ", " ".join(evaluation[::-1])])
     print(tabulate(output, headers = ["Token", "Operator Stack", "Evaluation Stack"], tablefmt="grid"))
 
-mathtopolishconverter("A^(-B*-C)%(D/E-F+G)")
+mathtopolishconverter("-100 + -10 / 2")

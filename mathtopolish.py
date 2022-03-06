@@ -5,7 +5,7 @@ from tabulate import tabulate
 output = []
 operator = []
 evaluation = []
-operator_value = {"+": 1, "-": 1, "*": 2, "/": 2, "(": 1, ")": 1, "^": 3}
+operator_value = {"+": 1, "-": 1, "*": 2, "/": 2, "(": 1, ")": 1, "^": 3, "%": 2}
 
 
 def tableformer(x, operator, evaluation):
@@ -67,6 +67,7 @@ def mathtopolishconverter(y):
                     x = " "
                 tableformer(" ", operator,evaluation)
                 operator.pop()
+                continue
             case _:
                 evaluation.append(x)
         tableformer(x, operator, evaluation)
@@ -78,4 +79,5 @@ def mathtopolishconverter(y):
     output.append(aux)
     print(tabulate(output, headers = ["Token", "Operator Stack", "Evaluation Stack"], tablefmt="grid"))
 
-mathtopolishconverter("(a-(a-a)-b)")
+mathtopolishconverter("A^(B*C)%(D/E-F+G)")
+input()

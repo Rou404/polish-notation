@@ -59,9 +59,9 @@ def polishlogicalcalculator(exp):
                 stack.append(a)
             case _:
                 stack.append(int(token))
-        auxiliary = [token, " ".join([str(x) for x in stack][::-1])]
+        auxiliary = [token, " ".join([str(x) for x in stack])]
         final.append(auxiliary)
     final.append(["Result is: ", stack.pop()])
     print(tabulate(final, headers=["Token", "Result"], tablefmt="grid"))
 
-polishlogicalcalculator("!|!0!1")
+polishlogicalcalculator("-&!|110=10")

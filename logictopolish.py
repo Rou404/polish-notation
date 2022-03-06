@@ -63,6 +63,7 @@ def logictopolishconverter(y):
                     x = " "
                 tableformer(" ", operator, evaluation)
                 operator.pop()
+                continue
             case _:
                 evaluation.append(x)
         tableformer(x, operator, evaluation)
@@ -71,4 +72,4 @@ def logictopolishconverter(y):
     output.append(aux)
     print(tabulate(output, headers = ["Token", "Operator Stack", "Evaluation Stack"], tablefmt="grid"))
 
-logictopolishconverter("!(!A|!B)")
+logictopolishconverter("!(A|B)&C-(D=E)")

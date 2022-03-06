@@ -31,13 +31,14 @@ def mathtopolishconverter(y):
                     remove(x)
                 operator.append(x)
             case "-":
-                if lasttoken.isalpha():
+                #if lasttoken == "(" or lasttoken.isalpha() or lasttoken.isdigit():
                     if operator:
                         remove(x)
                     operator.append(x)
-                else:
-                    y = "-"+evaluation.pop()
-                    evaluation.append(y)
+                #else:
+                 #   print(lasttoken, " ", x)
+                  #  y = "-"+evaluation.pop()
+                   # evaluation.append(y)
             case "*":
                 if operator:
                     remove(x)
@@ -58,17 +59,15 @@ def mathtopolishconverter(y):
                 operator.append(x)
             case "(":
                 while operator and operator[-1] != ")":
-                    output.append([x, " ".join(operator)," ".join(evaluation)])
+                    output.append([x, " ".join(operator), " ".join(evaluation)])
                     evaluation.append(operator.pop())
-                    x = " "
-                output.append([" ", " ".join(operator)," ".join(evaluation)])
                 operator.pop()
-                continue
             case _:
                 evaluation.append(x)
-        output.append([" ", " ".join(operator)," ".join(evaluation)])
+        lasttoken = x
+        output.append([x, " ".join(operator)," ".join(evaluation)])
     computefinal()
     output.append([" ", "Result is: ", " ".join(evaluation[::-1])])
-    print(tabulate(output, headers = ["Token", "Operator Stack", "Evaluation Stack"], tablefmt="grid"))
+    print(tabulate(output, headers=["Token", "Operator Stack", "Evaluation Stack"], tablefmt="grid"))
 
-mathtopolishconverter("-100 + -10 / 2")
+mathtopolishconverter("20 / ( 9 ^ 2 ) - ( 20 * ( 2 + -54 ) - 2 ^ 5 )")

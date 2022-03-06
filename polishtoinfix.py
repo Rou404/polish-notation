@@ -15,7 +15,7 @@ def tableformer(x, evaluation):
     output.append(aux)
 
 def polishtoinfix(exp):
-    expression = [x for x in exp]
+    expression = [x for x in exp.split()]
     expression = expression[::-1]
     polishstack = []
     for token in expression:
@@ -33,4 +33,4 @@ def polishtoinfix(exp):
 
     print(tabulate(output, headers=["Token", "Evaluation Stack"], tablefmt="grid"))
 
-polishtoinfix("-|!A-&BCD!|=EFG")
+polishtoinfix(" % ^ A * B C + - / D E F G")

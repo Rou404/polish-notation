@@ -7,14 +7,6 @@ operator = []
 evaluation = []
 operator_value = {"+": 1, "-": 1, "*": 2, "/": 2, "(": 1, ")": 1, "^": 3, "%": 2}
 
-
-def tableformer(x, operator, evaluation):
-    aux = []
-    aux.append(x)
-    aux.append(" ".join(operator))
-    aux.append(" ".join(evaluation))
-    output.append(aux)
-
 def remove(x):
     while operator_value[operator[-1]] > operator_value[x]:
         evaluation.append(operator[-1])
@@ -26,7 +18,7 @@ def computefinal():
     for x in operator[::-1]:
         evaluation.append(x)
         operator.pop()
-        tableformer(" ", operator, evaluation)
+        output.append([" ", " ".join(operator)," ".join(evaluation)])
 
 def mathtopolishconverter(y):
     expression = [x for x in y]
@@ -62,22 +54,17 @@ def mathtopolishconverter(y):
                 operator.append(x)
             case "(":
                 while operator and operator[-1] != ")":
-                    tableformer(x, operator, evaluation)
+                    output.append([x, " ".join(operator)," ".join(evaluation)])
                     evaluation.append(operator.pop())
                     x = " "
-                tableformer(" ", operator,evaluation)
+                output.append([" ", " ".join(operator)," ".join(evaluation)])
                 operator.pop()
                 continue
             case _:
                 evaluation.append(x)
-        tableformer(x, operator, evaluation)
+        output.append([" ", " ".join(operator)," ".join(evaluation)])
     computefinal()
-    aux = []
-    aux.append(" ")
-    aux.append("Result is: ")
-    aux.append("".join(evaluation[::-1]))
-    output.append(aux)
+    output.append([" ", "Result is: ", "".join(evaluation[::-1])])
     print(tabulate(output, headers = ["Token", "Operator Stack", "Evaluation Stack"], tablefmt="grid"))
 
-mathtopolishconverter("A^(B*C)%(D/E-F+G)")
-input()
+mathtopolishconverter("A^(-B*-C)%(D/E-F+G)")
